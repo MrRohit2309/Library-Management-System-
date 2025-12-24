@@ -61,5 +61,60 @@ This project is developed as part of an academic **Database Management Systems (
 cd Library-Management-System-
 npm install
 node server.js
+```
+---
 
+## 🌐 Frontend Setup
+Open the project folder
 
+Open Library Frontend.html in a web browser
+
+Use the interface to manage library operations
+
+---
+
+## 📂 Project Structure
+```bash
+Library-Management-System/
+│
+├── 📄 Library Frontend.html
+├── 📄 student-login.html
+├── ⚙️ server.js
+├── ⚙️ db.js
+├── 🗄️ db.sql
+├── 📦 package.json
+├── 📦 package-lock.json
+├── 🚫 .gitignore
+├── 🔐 .env.example
+└── 📁 Backup Files/
+```
+
+---
+
+## 📖 DBMS Concepts Implemented
+   🧱 Relational database design
+
+🧾 SQL queries
+
+🔑 Primary keys and relationships
+
+✅ Data integrity
+
+🔌 Backend–database connectivity
+
+---
+
+## 👨‍🎓 Academic Use
+This project is developed for educational purposes as part of a DBMS course project and demonstrates the real-world application of database management concepts.
+
+---
+
+## 👩‍💻 Authors
+      Rohit Sukale
+      Samruddhi Bate
+---
+
+## 📜 License
+This project is intended only for academic and learning purposes.
+
+⭐ If you like this project, don’t forget to star the repository!
