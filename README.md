@@ -1,87 +1,143 @@
-📚 Library Management System (DBMS Project)
+# Library Management System DBMS Project
 
-📌 Project Overview
-The Library Management System is a database-driven web application designed to automate and manage core library operations such as book records, student access, and database interactions.
-This project is developed as part of a DBMS academic project to demonstrate practical implementation of database concepts integrated with a web-based interface.
+##📌 Project Description
+The Library Management System is a database-driven web application designed to automate and manage essential library operations such as book records, student access, and database interactions.
+
+This project is developed as part of an academic DBMS course to demonstrate the practical application of database management concepts integrated with a web-based interface.
+
+---
 
 🎯 Objectives
-1. To design and implement a structured library database
-2. To manage book and student records efficiently
-3. To reduce manual effort in library operations
-4. To demonstrate DBMS concepts such as tables, queries, and relationships
-5. To integrate backend logic with a frontend interface
+🗂️ Design and implement a structured relational database
 
-🛠️ Technologies Used
-> Frontend: HTML
-> Backend: Node.js, JavaScript
-> Database: SQL (MySQL / compatible RDBMS)
-> Tools: Git, GitHub, npm
+👨‍🎓 Manage student and book records efficiently
 
+⏱️ Reduce manual workload in library operations
 
-📂 Project Structure
-Library-Management-System-
-│
-├── Library Frontend.html   # Main frontend interface
-├── student-login.html      # Student login page
-├── server.js               # Backend server logic
-├── db.js                   # Database connection logic
-├── db.sql                  # SQL schema and queries
-├── package.json            # Project dependencies
-├── package-lock.json       # Dependency lock file
-├── .gitignore              # Ignored files configuration
-├── .env.example            # Environment variable template
-└── Backup Files/           # Supporting or backup files
+🧠 Apply DBMS concepts like tables, queries, and relationships
 
+🔗 Integrate backend logic with a frontend interface
+
+---
+
+ ## ✨ Features
+🔐 Student login system
+
+📘 Book record management
+
+🌐 Backend server for handling requests
+
+🗃️ Structured SQL database
+
+🧩 Clean separation of frontend and backend
+
+📁 Well-organized GitHub repository
 
 🗄️ Database Design
-The database is designed using relational principles and includes:
-1. Tables for books
-2. Tables for students
-3. SQL queries for inserting, updating, and retrieving data
-4. Database schema is provided in: db.sql
+📘 Books table
 
-▶️ How to Run the Project
+🎓 Students table
 
-1️⃣ Clone the Repository
-git clone https://github.com/MrRohit2309/Library-Management-System-.git
+🔑 Primary keys and relationships
+
+🔍 SQL queries for insert, update, and retrieval
+
+🧾 Database schema available in db.sql
+
+---
+## 🛠️ Technology Used
+🎨 Frontend: HTML
+
+⚙️ Backend: Node.js, JavaScript
+
+🗄️ Database: MySQL (SQL / RDBMS)
+
+🧰 Tools: Git, GitHub, npm
+
+---
+
+## ⚙️ How It Works
+👤 User accesses the frontend interface
+
+🔐 Student logs in using the login page
+
+📡 Frontend sends requests to the backend
+
+🗄️ Backend interacts with the MySQL database
+
+✅ Requested data is retrieved and displayed to the user
+
+---
+
+## ▶️ How to Run the Project
+
+###🔹 Backend
+Open terminal
+
+Go to the project folder:
+
+bash
+Copy code
 cd Library-Management-System-
+Install dependencies:
 
-2️⃣ Install Dependencies
+bash
+Copy code
 npm install
+Start the server:
 
-3️⃣ Setup Database
-Create a database in MySQL
-Import db.sql
-Update database credentials in db.js or .env
-
-4️⃣ Start the Server
+bash
+Copy code
 node server.js
 
-5️⃣ Open in Browser
-Open:
-Library Frontend.html
+---
 
-✨ Features
-1. Student login interface
-2. Backend server handling requests
-3. Structured SQL database
-4. Clean separation of frontend and backend
-5. Proper GitHub repository structure
+## 🌐 Frontend
+Open the project folder
+
+Open Library Frontend.html in any web browser
+
+Use the interface to manage library operations ✨
+
+---
+
+## 📂 Project Structure
+pgsql
+Copy code
+Library-Management-System-
+│
+├── Library Frontend.html
+├── student-login.html
+├── server.js
+├── db.js
+├── db.sql
+├── package.json
+├── package-lock.json
+├── .gitignore
+├── .env.example
+└── Backup Files/
+
+---
 
 📖 DBMS Concepts Implemented
-1. Relational database design
-2. SQL queries
-3. Primary keys and relationships
-4. Data integrity
-5. Backend–database connectivity
+🧱 Relational database design
 
-👨‍🎓 Academic Use
-This project is developed for educational purposes as part of a DBMS course project and demonstrates practical application of database management concepts.
+🧾 SQL queries
 
-👤 Author
+🔑 Primary keys and relationships
+
+✅ Data integrity
+
+🔌 Backend–database connectivity
+---
+
+## 👨‍🎓 Academic Use
+This project is developed for educational purposes as part of a DBMS course project and demonstrates the real-world application of database management concepts.
+
+---
+
+## 👩‍💻 Authors
 Rohit Sukale
-B.Tech – Computer Engineering
-DBMS Course Project
+Samruddhi Bate
 
-📜 License
-This project is intended for academic and learning purposes.
+⭐ If you like this project, don’t forget to star the repository!
