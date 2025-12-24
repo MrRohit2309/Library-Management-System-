@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library Management System</title>
+
+  <!-- ✅ Tailwind configuration BEFORE loading Tailwind -->
+  <script>
+    tailwind.config = {
+      config: {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              background: { light: '#f7f9fb', dark: '#111827' },
+              text: { light: '#111827', dark: '#f3f4f6' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+ <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Load Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+
+  <style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f7f9fb;
+  }
+
+  .nav-tab.active {
+    color: #2563eb;
+    background-color: #e0f2fe;
+    border-bottom: 2px solid #2563eb;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+
+  .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+
+  .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+
+  .status-issued { background-color: #fef3c7; color: #92400e; }
+  .status-returned { background-color: #d1fae5; color: #065f46; }
+  .status-overdue { background-color: #fee2e2; color: #991b1b; }
+
+  .modal-show { animation: fadeIn 0.25s ease-out, scaleIn 0.25s ease-out; }
+  .modal-hide { animation: fadeOut 0.2s ease-in forwards; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes scaleIn { from { transform: scale(0.95); } to { transform: scale(1); } }
+
+  /* 🌙 Universal Dark Mode Overrides */
+  .dark .bg-white { background-color: #1f2937 !important; color: #f3f4f6 !important; }
+  .dark .bg-gray-100 { background-color: #111827 !important; }
+  .dark .text-gray-800, .dark .text-gray-900 { color: #f3f4f6 !important; }
+  .dark .border-gray-200 { border-color: #374151 !important; }
+  .dark .shadow-md, .dark .shadow-sm { box-shadow: 0 2px 4px rgba(255,255,255,0.1) !important; }
+  .dark .shadow-lg, .dark .shadow-md { box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important; }
+
+  /* Nav tabs dark mode fixes */
+  .dark .nav-tab { color: #d1d5db; }
+  .dark .nav-tab:hover { color: #ffffff; background-color: #374151; }
+  .dark .nav-tab.active { color: #60a5fa; background-color: #1f2937; border-bottom: 2px solid #3b82f6; }
+
+  /* Table styles dark */
+  .dark table { color: #f3f4f6; }
+  .dark thead { background-color: #1f2937; color: #d1d5db; }
+  .dark tbody tr { background-color: #111827; }
+  .dark tbody tr:nth-child(even) { background-color: #1f2937; }
+  .dark tbody tr:hover { background-color: #374151; }
+  .dark th, .dark td { border-color: #374151 !important; }
+
+  /* Inputs dark */
+  .dark input, .dark select, .dark textarea {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
+    border-color: #4b5563 !important;
+  }
+  .dark input:hover, .dark select:hover, .dark textarea:hover { background-color: #243045 !important; }
+  .dark input:focus, .dark select:focus, .dark textarea:focus {
+    border-color: #60a5fa !important; outline: none !important;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.4);
+  }
+  .dark input::placeholder, .dark textarea::placeholder { color: #9ca3af !important; }
+  .dark option { background-color: #1f2937; color: #f3f4f6; }
+
+  /* Light inputs */
+  input, select, textarea {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    appearance: none;
+  }
+  input:hover, select:hover, textarea:hover { background-color: #f9fafb !important; }
+  input:focus, select:focus, textarea:focus { border-color: #3b82f6 !important; outline: none !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+  input::placeholder, textarea::placeholder { color: #6b7280 !important; }
+
+  /* Re-assert dark mode overrides */
+  .dark input, .dark select, .dark textarea {
+    background-color: #1f2937 !important; color: #f3f4f6 !important; border-color: #4b5563 !important;
+  }
+  .dark input:focus, .dark select:focus, .dark textarea:focus { border-color: #60a5fa !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.4); }
+  .dark input::placeholder, .dark textarea::placeholder { color: #9ca3af !important; }
+
+/* ✅ Final Modal Fix: hidden by default, centered when active */
+/* Modal hidden by default */
+#editModal {
+  display: none;             /* NO !important */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  transition: opacity 0.25s ease;
+}
+
+/* When modal is active */
+#editModal.flex {
+  display: flex;             /* NO !important */
+  opacity: 1;
+}
+
+/* Modal box smooth scale animation */
+.modal-show {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  transition: all 0.25s ease-out;
+}
+
+.modal-hide {
+  opacity: 0 !important;
+  transform: scale(0.95) !important;
+  transition: all 0.2s ease-in;
+}
+
+  </style>
+</head>
+
+<!-- ✅ Added dark mode classes globally -->
+<body class="transition-colors duration-500 bg-gray-50 text-gray-900 dark:text-gray-100">
+
+  <!-- 🌈 Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-400 dark:from-gray-800 dark:to-gray-700 text-white py-4 px-6 shadow-lg flex items-center justify-between transition-colors duration-300">
+    <h1 class="text-2xl font-semibold">📚 Library Management System</h1>
+    <button onclick="toggleDarkMode()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition">
+      🌓 Toggle Dark Mode
+    </button>
+  </header>
+
+  <!-- 🧩 Main App Container -->
+  <div id="app" class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-500">
+    <!-- app content will be injected here by renderApp() -->
+  </div>
+
+ <!-- ============================
+     Edit Modal (Centered, Smooth Animation)
+     ============================ -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+
+  <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl shadow-xl p-6 w-[400px] transition-colors duration-300">
+    
+    <h2 id="modalTitle" class="text-xl font-semibold mb-4">Edit Record</h2>
+
+    <form id="editForm" class="flex flex-col gap-3">
+
+      <!-- ✅ Add 6 Input Fields -->
+     <!-- Student ID -->
+<input id="editField1" class="border rounded-md px-3 py-2 bg-white dark:bg-gray-700" placeholder="Student ID" />
+
+<!-- Student Name -->
+<input id="editField2" class="border rounded-md px-3 py-2 bg-white dark:bg-gray-700" placeholder="Student Name" />
+
+<!-- Email -->
+<input id="editField3" class="border rounded-md px-3 py-2 bg-white dark:bg-gray-700" placeholder="Email" />
+
+<!-- Department -->
+<input id="editField4" class="border rounded-md px-3 py-2 bg-white dark:bg-gray-700" placeholder="Department" />
+
+<!-- Year -->
+<input id="editField5" class="border rounded-md px-3 py-2 bg-white dark:bg-gray-700" placeholder="Year" />
+
+<!-- Contact Number -->
+<input id="editField6" class="border rounded-md px-3 py-2 bg-white dark:bg-gray-700" placeholder="Contact Number" />
+
+
+      <div class="flex justify-end mt-4 gap-2">
+        <button type="button" id="cancelBtn" class="bg-gray-300 dark:bg-gray-600 text-black dark:text-white px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500">
+          Cancel
+        </button>
+
+        <button id="modal-save-btn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          Save
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+
+  <!-- ============================ -->
+
+  <!-- ✅ Your Script -->
+<!-- Firebase Imports and Initialization -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        onAuthStateChanged, 
+        signOut 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyCSrSaPvaMjBCpQrSbIBHFQMSv-guM5tuQ",
+        authDomain: "library-management-syste-62f40.firebaseapp.com",
+        projectId: "library-management-syste-62f40",
+        storageBucket: "library-management-syste-62f40.firebasestorage.app",
+        messagingSenderId: "1096116555216",
+        appId: "1:1096116555216:web:77661d0c6096a413df3dd5",
+        measurementId: "G-E69R5YGZHT"
+    };
+
+    const DEMO_MODE = false;
+    const API_BASE = "http://localhost:4000/api";
+    let db = null;
+    let auth = null;
+    let isAuthenticated = false;
+    let currentUserId = null;
+    let currentPage = 'dashboard';
+    const appEl = document.getElementById('app');
+
+    // 🕓 Helper Function — Fix date display (India timezone)
+function formatDateLocal(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata"
+  });
+}
+
+// 🔒 Prevent past dates for Due Date
+document.addEventListener("DOMContentLoaded", () => {
+  const dueInput = document.getElementById("due-date");
+  if (dueInput) {
+    const today = new Date().toISOString().split("T")[0];
+    dueInput.min = today;
+  }
+});
+
+
+
+    const NAV_ITEMS = [
+        { id: 'dashboard', name: 'Dashboard', icon: '<path d="M3 3v18h18"/> <path d="m18 7-5 5-4-4-3 3"/>' },
+        { id: 'books', name: 'Books', icon: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>' },
+        { id: 'students', name: 'Students', icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+        { id: 'issue', name: 'Issue Book', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="9" x2="15" y1="15" y2="15"/>' },
+        { id: 'return', name: 'Return Book', icon: '<polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M22 18H8a4 4 0 0 1-4-4V4"/><path d="M2 6h16a4 4 0 0 1 4 4v4"/>' },
+        { id: 'reports', name: 'Reports', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" x2="12" y1="16" y2="16"/><line x1="8" x2="8" y1="16" y2="16"/><line x1="16" x2="16" y1="16" y2="16"/>' }
+    ];
+
+    const getIcon = (d, size = 16, stroke = 'currentColor') => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-icon">${d}</svg>`; 
+
+    const bookIcon = '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>'; 
+
+    const usersIcon = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'; 
+
+    const checkIcon = '<path d="M20 6 9 17l-5-5"/>'; 
+
+    const minusIcon = '<path d="M5 12h14"/>'; 
+
+    const clockIcon = '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'; 
+
+    const logoutIcon = '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>'; 
+
+    const plusIcon = '<line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/>'; 
+
+    const editIcon = '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>'; 
+
+    const deleteIcon = '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>';
+
+
+ // --- API Functions ---
+async function fetchStats() {
+    try {
+        const res = await fetch(API_BASE + '/stats');
+        const data = await res.json();
+        return {
+            totalBooks: data.totalBooks || 0,
+            availableBooks: data.availableBooks || 0,
+            totalStudents: data.totalStudents || 0,
+            booksIssued: data.booksIssued || 0,
+            overdueBooks: data.overdueBooks || 0,
+            returnedBooks: data.returnedBooks || 0,
+            totalFine: data.totalFine || 0
+        };
+    } catch (e) {
+        console.error('⚠️ Stats fetch failed:', e);
+        return {
+            totalBooks: 0,
+            availableBooks: 0,
+            totalStudents: 0,
+            booksIssued: 0,
+            overdueBooks: 0,
+            returnedBooks: 0,
+            totalFine: 0
+        };
+    }
+}
+
+    async function fetchBooks() { 
+        try { 
+            const res = await fetch(API_BASE + '/books'); 
+            return await res.json(); 
+        } catch (e) {
+             console.error('books fetch failed', e); 
+             return []; } }
+
+    async function fetchStudents() {
+        try {
+            const res = await fetch(API_BASE + '/students');
+            return await res.json();
+        } catch (e) {
+            console.error('students fetch failed', e);
+            return [];
+        }
+    }
+
+    async function fetchIssued() {
+        try {
+            const res = await fetch(API_BASE + "/issued");
+            return await res.json();
+        } catch (e) {
+            console.error("issued fetch failed", e);
+            return [];
+        }
+     }
+
+    async function fetchReturns() {
+        try {
+            const res = await fetch(API_BASE + '/returns');
+            return await res.json();
+        } catch (e) {
+            console.error('returns fetch failed', e);
+            return [];
+        }
+    }
+
+    async function fetchOverdue() {
+        try {
+            const res = await fetch(API_BASE + '/overdue');
+            return await res.json();
+        } catch (e) {
+            console.error('overdue fetch failed', e);
+            return [];
+        }
+    }
+
+    // --- View Templates ---
+
+    const renderLogin = () => `
+        <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div class="w-full max-w-md p-8 bg-white shadow-lg rounded-xl border border-gray-200">
+                <div class="flex flex-col items-center space-y-4 mb-8">
+                    <div class="p-3 bg-blue-100 rounded-full text-blue-600">
+                        ${getIcon(bookIcon, 32, '#2563eb')}
+                    </div>
+                    <h1 class="text-2xl font-semibold text-gray-800">Library Management System</h1>
+                    <p class="text-sm text-gray-500 text-center">Login to access the system</p>
+                    <p class="text-xs text-gray-400">VIT Pune - By Rohit Sukale (Mock credentials)</p>
+                </div>
+                <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="email" value="admin@library.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="password" value="••••••" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md">
+                        Login
+                    </button>
+                    <div id="login-msg" class="mt-3 text-sm text-center text-gray-600"></div>
+                </form>
+                <div id="login-error" class="mt-4 text-red-500 text-sm hidden text-center"></div>
+            </div>
+        </div>
+    `;
+
+    const Card = (title, value, iconD, color) => `
+        <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-${color}-500 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-base font-medium text-gray-500">${title}</h3>
+                    <div class="text-${color}-500">
+                         ${getIcon(iconD, 20, 'currentColor')}
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">${value}</p>
+            </div>
+        </div>
+    `;
+// --- Fixed and Complete renderDashboard() Function ---
+const renderDashboard = async () => {
+    const stats = await fetchStats();
+
+    return `
+        <div class="p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-1">Dashboard</h2>
+            <p class="text-gray-500 mb-6">Overview of library statistics</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                ${Card('Total Books', stats.totalBooks, bookIcon, 'blue')}
+                ${Card('Available Books', stats.availableBooks, checkIcon, 'green')}
+                ${Card('Total Students', stats.totalStudents, usersIcon, 'indigo')}
+                ${Card('Books Issued', stats.booksIssued, minusIcon, 'purple')}
+                ${Card('Overdue Books', stats.overdueBooks, clockIcon, 'red')}
+                ${Card('Returned Books', stats.returnedBooks, checkIcon, 'emerald')}
+                ${Card('Total Fine Collected (₹)', Number(stats.totalFine || 0).toFixed(2), clockIcon, 'amber')}
+
+            </div>
+        </div>
+    `;
+};
+
+    
+
+    const renderTableManagement = async (type) => { 
+        const title = type === 'books' ? 'Books Management' : 'Students Management'; 
+
+        const subtitle = type === 'books' ? 'Add, edit, and manage library books' : 'Add and manage student records'; 
+
+        const buttonText = type === 'books' ? 'Add Book' : 'Add Student';
+
+        const placeholder = type === 'books' ? 'Search books by title or author...' : 'Search students by name or course...'; let items = []; 
+
+        if (type === 'books') {
+            items = await fetchBooks();
+            } else if (type === 'students') {
+                items = await fetchStudents(); // ✅ Fetch students when viewing Students tab
+            }
+
+     const tableHeaders = type === 'books'
+  ? ['Title', 'Author', 'Genre', 'Total Copies', 'Available', 'Actions']
+   : ['ID', 'Name', 'Course', 'Year', 'Contact Number', 'Email', 'Actions'];
+
+const tableRows = items.length > 0 
+  ? items.map(item => { 
+    
+    if (type === 'books') {
+      return `
+      <tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150">
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.title}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.author_name || '-'}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.genre || '-'}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.total_copies}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.available_copies}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <div class="flex space-x-2">
+            <button class="text-blue-600 hover:text-blue-900" onclick="editBook(${item.book_id})">
+              ${getIcon(editIcon, 16)}
+            </button>
+            <button class="text-red-600 hover:text-red-900" onclick="deleteBook(${item.book_id})">
+              ${getIcon(deleteIcon, 16)}
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    // ---------- STUDENTS TABLE ROW ----------
+return `
+  <tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150">
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.student_id}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.student_name}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.department || '-'}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.year || '-'}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.contact_no || '-'}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.email || '-'}</td>
+    
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+      <div class="flex space-x-2">
+        <button class="text-blue-600 hover:text-blue-900" onclick="editStudent(${item.student_id})">
+          ${getIcon(editIcon, 16)}
+        </button>
+        <button class="text-red-600 hover:text-red-900" onclick="deleteStudent(${item.student_id})">
+          ${getIcon(deleteIcon, 16)}
+        </button>
+      </div>
+    </td>
+  </tr>`;
+  }).join('')
+  : `<tr><td colspan="${tableHeaders.length}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No records found</td></tr>`;
+
+
+        return `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-1">${title}</h2>
+                        <p class="text-gray-500">${subtitle}</p>
+                    </div>
+                    <button onclick="${type === 'books' ? 'showAddBook()' : 'showAddStudent()'}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg flex items-center shadow-md transition duration-200">
+                        ${getIcon(plusIcon, 16, 'white')}
+                        <span class="ml-2">${buttonText}</span>
+                    </button>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                    <input type="text" placeholder="${placeholder}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    ${tableHeaders.map(header => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${header}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    const renderFormView = async (type) => {
+        if (type === 'issue') {
+            const books = await fetchBooks();
+            const students = await fetchStudents();
+            
+            const bookOptions = books.map(book => 
+                `<option value="${book.book_id}">${book.title} (${book.available_copies} available)</option>`
+            ).join('');
+            
+            const studentOptions = students.map(student => 
+                `<option value="${student.student_id}">${student.student_name} - ${student.department}</option>`
+            ).join('');
+            
+            return `
+                <div class="p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-1">Issue Book</h2>
+                    <p class="text-gray-500 mb-6">Issue a book to a student</p>
+
+                    <div class="bg-white p-8 rounded-xl shadow-md max-w-xl mx-auto border-t-4 border-blue-500">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Book Issue Form</h3>
+
+                        <form onsubmit="event.preventDefault(); doIssue();" class="space-y-6">
+                            <div>
+                                <label for="select-book" class="block text-sm font-medium text-gray-700 mb-1">Select Book</label>
+                                <select id="select-book" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 form-select">
+                                    <option value="">Choose a book</option>
+                                    ${bookOptions}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="select-student" class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                                <select id="select-student" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 form-select">
+                                    <option value="">Choose a student</option>
+                                    ${studentOptions}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="due-date" class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                               <input type="date" id="due-date"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                            </div>
+
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md">
+                                Issue Book
+                            </button>
+                        </form>
+                        <div id="issue-msg" class="mt-4 text-sm text-center"></div>
+                    </div>
+                </div>
+            `;
+        } else if (type === 'return') {
+            const issued = await fetchIssued();
+            const activeIssues = issued.filter(issue => issue.status === 'Issued' || issue.status === null);
+            
+            const issueOptions = activeIssues.length > 0 ?
+                activeIssues.map(issue =>
+                    `<option value="${issue.issue_id}">
+                        #${issue.issue_id} — ${issue.book_title} — ${issue.student_name}
+                        (Due: ${formatDateLocal(issue.due_date)})
+                    </option>`
+                ).join('') :
+                '<option value="">No active issues</option>';
+
+            
+            return `
+                <div class="p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-1">Return Book</h2>
+                    <p class="text-gray-500 mb-6">Process book returns and calculate fines</p>
+
+                    <div class="bg-white p-8 rounded-xl shadow-md max-w-xl mx-auto border-t-4 border-blue-500">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Book Return Form</h3>
+
+                        <form onsubmit="event.preventDefault(); doReturn();" class="space-y-6">
+                            <div>
+                                <label for="select-issued-book" class="block text-sm font-medium text-gray-700 mb-1">Select Issued Book</label>
+                                <select id="select-issued-book" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 form-select">
+                                    <option value="">Choose a book to return</option>
+                                    ${issueOptions}
+                                </select>
+                            </div>
+
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md">
+                                Return Book
+                            </button>
+                        </form>
+                        <div id="return-msg" class="mt-4 text-sm text-center"></div>
+                    </div>
+                </div>
+            `;
+        }
+    };
+
+    const renderReports = async () => {
+        const issued = await fetchIssued();
+        const returns = await fetchReturns();
+        const overdue = await fetchOverdue();
+        
+        const issuedRows = issued.length > 0 ? issued.map(record => `
+            <tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${record.student_id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.book_title}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.student_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDateLocal(record.issue_date)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDateLocal(record.due_date)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.return_date ? formatDateLocal(record.return_date) : '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹${record.fine_amount || 0}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${record.status === 'Issued' ? 'status-issued' : record.status === 'Returned' ? 'status-returned' : 'status-overdue'}">
+                        ${record.status || 'Issued'}
+                    </span>
+                </td>
+            </tr>
+        `).join('') : `
+            <tr>
+                <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                    No records found
+                </td>
+            </tr>
+        `;
+        
+      const returnsRows = returns.length > 0
+  ? returns.map(record => `
+      <tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              ${record.student_id}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              ${record.book_title}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              ${record.student_name}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              ${formatDateLocal(record.return_date)}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              ₹${record.fine_amount}
+          </td>
+      </tr>
+      `).join('')
+  : `
+      <tr>
+          <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+              No return records found
+          </td>
+      </tr>
+    `;
+
+
+        
+        const overdueRows = overdue.length > 0 ? overdue.map(record => `
+            <tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><td>${record.student_id}</td></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.book_title}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.student_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.due_date}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹${record.fine_amount || 0}</td>
+            </tr>
+        `).join('') : `
+            <tr>
+                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                    No overdue books found
+                </td>
+            </tr>
+        `;
+
+        return `
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-1">Reports</h2>
+                <p class="text-gray-500 mb-6">View issued books and overdue records</p>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button id="tab-all-issued" onclick="switchReportTab('all')" class="py-2 px-4 text-sm font-medium transition duration-150 active text-blue-600 border-b-2 border-blue-600">
+                        All Issued Books
+                    </button>
+                    <button id="tab-overdue" onclick="switchReportTab('overdue')" class="py-2 px-4 text-sm font-medium transition duration-150 text-gray-500 hover:text-gray-700">
+                        Overdue Books
+                    </button>
+                    <button id="tab-returns" onclick="switchReportTab('returns')" class="py-2 px-4 text-sm font-medium transition duration-150 text-gray-500 hover:text-gray-700">
+                        Returns History
+                    </button>
+                </div>
+
+                <!-- Report Content (All Issued Books) -->
+                <div id="report-content-all" class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">All Issued Books</h3>
+                        <p class="text-gray-500 mb-4">Complete history of book issues and returns</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">   Student ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fine (₹)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${issuedRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Report Content (Overdue Books, initially hidden) -->
+                <div id="report-content-overdue" class="bg-white rounded-xl shadow-md overflow-hidden hidden">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Overdue Books</h3>
+                        <p class="text-gray-500 mb-4">List of currently overdue book issues</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fine (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${overdueRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Report Content (Returns History, initially hidden) -->
+                <div id="report-content-returns" class="bg-white rounded-xl shadow-md overflow-hidden hidden">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Returns History</h3>
+                        <p class="text-gray-500 mb-4">Complete history of book returns</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Student ID
+                                    </th>                          
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Book Title
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Student Name
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Return Date
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Fine (₹)
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${returnsRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    // --- Main Application Shell ---
+    const renderAppShell = async () => {
+        let currentViewContent = '';
+        
+        switch(currentPage) {
+            case 'dashboard':
+                currentViewContent = await renderDashboard();
+                break;
+            case 'books':
+                currentViewContent = await renderTableManagement('books');
+                break;
+            case 'students':
+                currentViewContent = await renderTableManagement('students');
+                break;
+            case 'issue':
+                currentViewContent = await renderFormView('issue');
+                break;
+            case 'return':
+                currentViewContent = await renderFormView('return');
+                break;
+            case 'reports':
+                currentViewContent = await renderReports();
+                break;
+            default:
+                currentViewContent = await renderDashboard();
+        }
+
+        return `
+            <div class="flex flex-col h-screen overflow-hidden">
+                <!-- Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 z-10">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-xl font-bold text-gray-900">Library Management System</h1>
+                            <span class="text-sm text-gray-500 hidden sm:block">| VIT Pune - By Rohit Sukale</span>
+                        </div>
+                        <button onclick="handleLogout()" class="bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-3 rounded-lg border border-gray-300 transition duration-150 flex items-center shadow-sm">
+                            ${getIcon(logoutIcon, 16, '#4b5563')}
+                            <span class="ml-2 hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Navigation Bar -->
+                <nav class="bg-white border-b border-gray-200">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex space-x-1 sm:space-x-4 overflow-x-auto whitespace-nowrap">
+                            ${NAV_ITEMS.map(item => `
+                                <button onclick="setPage('${item.id}')"
+                                    class="nav-tab py-3 px-3 sm:px-4 text-sm font-medium flex items-center transition duration-150 ${currentPage === item.id ? 'active' : 'text-gray-600 hover:text-gray-800'}"
+                                    data-page="${item.id}">
+                                    ${getIcon(item.icon, 18)}
+                                    <span class="ml-2">${item.name}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Main Content Area -->
+                <main class="flex-1 overflow-y-auto bg-gray-100">
+                    <div class="max-w-7xl mx-auto">
+                        ${currentViewContent}
+                    </div>
+                </main>
+            </div>
+        `;
+    };
+
+ 
+    // --- Core Application Logic ---
+
+    // Function to set the current page and re-render
+    window.setPage = async (pageId) => {
+        currentPage = pageId;
+        await renderApp();
+
+        // Specific logic for reports tab (only relevant on first render of Reports view)
+        if (pageId === 'reports') {
+            switchReportTab('all');
+        }
+    };
+
+    // Function to switch tabs inside the Reports view
+    window.switchReportTab = (tab) => {
+        const allTab = document.getElementById('tab-all-issued');
+        const overdueTab = document.getElementById('tab-overdue');
+        const returnsTab = document.getElementById('tab-returns');
+        const allContent = document.getElementById('report-content-all');
+        const overdueContent = document.getElementById('report-content-overdue');
+        const returnsContent = document.getElementById('report-content-returns');
+
+        if (!allTab || !overdueTab || !returnsTab) return; // Exit if elements aren't loaded yet
+
+        // Reset all tabs
+        [allTab, overdueTab, returnsTab].forEach(t => {
+            t.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            t.classList.add('text-gray-500', 'hover:text-gray-700');
+        });
+
+        // Hide all content
+        [allContent, overdueContent, returnsContent].forEach(c => {
+            if (c) c.classList.add('hidden');
+        });
+
+        // Activate selected tab and content
+        if (tab === 'all') {
+            allTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            allTab.classList.remove('text-gray-500', 'hover:text-gray-700');
+            if (allContent) allContent.classList.remove('hidden');
+        } else if (tab === 'overdue') {
+            overdueTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            overdueTab.classList.remove('text-gray-500', 'hover:text-gray-700');
+            if (overdueContent) overdueContent.classList.remove('hidden');
+        } else if (tab === 'returns') {
+            returnsTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            returnsTab.classList.remove('text-gray-500', 'hover:text-gray-700');
+            if (returnsContent) returnsContent.classList.remove('hidden');
+        }
+    };
+
+   // Main rendering function
+const renderApp = async () => {
+    if (isAuthenticated) {
+        appEl.innerHTML = await renderAppShell();
+
+        // ⭐ Fix: Apply min date AFTER HTML fully loads
+        setTimeout(() => {
+            const dueInput = document.getElementById("due-date");
+            if (dueInput) {
+                const today = new Date().toISOString().split("T")[0];
+                dueInput.min = today;   // ❌ Past dates blocked
+            }
+        }, 20);
+
+        if (currentPage === 'reports') {
+            setTimeout(() => window.switchReportTab('all'), 0);
+        }
+
+    } else {
+        appEl.innerHTML = renderLogin();
+    }
+};
+
+
+    // --- API Action Functions ---
+
+// Book Management
+window.showAddBook = async () => {
+  openModal(
+    "Add New Book",
+    ["Book Title", "Author Name", "Genre (e.g., Fiction, Fantasy)", "Total Copies"],
+    ["", "", "", ""],
+    async (values) => {
+      // 🔥 Run validation correctly (global)
+      if (!window.modalValidate()) return false;
+
+      const [title, author_name, genre, total_copies] = values;
+
+      try {
+        const res = await fetch(API_BASE + '/books', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            author_name,
+            genre,
+            total_copies: Number(total_copies)
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("✅ Book added successfully!");
+          await renderApp();
+          return true; // CLOSE MODAL
+        }
+
+        alert("❌ Failed: " + (data.error || "Unknown error"));
+        return false; // KEEP MODAL OPEN
+
+      } catch (err) {
+        alert("⚠️ Network Error");
+        return false;
+      }
+    }
+  );
+
+  // 🌟 SETUP UI VALIDATION ENGINE (ONLY ONCE PER MODAL)
+  const textRegex = /^[A-Za-z0-9\s.,\-()]+$/;
+  const numberRegex = /^[0-9]+$/;
+
+  const visibleFields = fields.filter(f => !f.classList.contains("hidden"));
+  const saveBtn = document.querySelector("#modal-save-btn");
+
+  // Remove old errors
+  document.querySelectorAll(".error-msg").forEach(e => e.remove());
+
+  const errorBoxes = visibleFields.map(input => {
+    const box = document.createElement("div");
+    box.className = "error-msg";
+    box.style.color = "red";
+    box.style.fontSize = "12px";
+    box.style.marginTop = "3px";
+    input.insertAdjacentElement("afterend", box);
+    return box;
+  });
+
+  // Disable Save at start
+  saveBtn.disabled = true;
+  saveBtn.style.opacity = "0.5";
+
+  // 🌟 GLOBAL VALIDATION FUNCTION
+  window.modalValidate = () => {
+    let valid = true;
+
+    // TITLE
+    if (!textRegex.test(visibleFields[0].value.trim())) {
+      errorBoxes[0].textContent = "Enter a valid title.";
+      visibleFields[0].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[0].textContent = "";
+      visibleFields[0].style.border = "";
+    }
+
+    // AUTHOR
+    if (!textRegex.test(visibleFields[1].value.trim())) {
+      errorBoxes[1].textContent = "Valid author name required.";
+      visibleFields[1].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[1].textContent = "";
+      visibleFields[1].style.border = "";
+    }
+
+    // GENRE
+    if (!textRegex.test(visibleFields[2].value.trim())) {
+      errorBoxes[2].textContent = "Genre must be letters only.";
+      visibleFields[2].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[2].textContent = "";
+      visibleFields[2].style.border = "";
+    }
+
+    // COPIES
+    if (!numberRegex.test(visibleFields[3].value.trim()) ||
+        Number(visibleFields[3].value) <= 0) {
+      errorBoxes[3].textContent = "Copies must be a number > 0.";
+      visibleFields[3].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[3].textContent = "";
+      visibleFields[3].style.border = "";
+    }
+
+    // ENABLE/DISABLE SAVE
+    saveBtn.disabled = !valid;
+    saveBtn.style.opacity = valid ? "1" : "0.5";
+
+    return valid;
+  };
+
+  // Real-time validation
+  visibleFields.forEach(input => {
+    input.addEventListener("input", window.modalValidate);
+  });
+
+  window.modalValidate();
+};
+
+
+window.deleteBook = async (id) => {
+    if (!confirm('Are you sure you want to delete this book?')) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/books/${id}`, {
+            method: 'DELETE'
+        });
+
+        let data = {};
+        try {
+            data = await res.json();
+        } catch {
+            data = {};
+        }
+
+        if (!res.ok) {
+            const msg = data.error || "Could not delete book.";
+            alert("❌ " + msg);
+            return;
+        }
+
+        alert("✅ Book deleted successfully");
+        await renderApp();
+    } catch (err) {
+        alert("⚠️ Network error while deleting book");
+        console.error(err);
+    }
+};
+
+window.editBook = async (id) => {
+  try {
+    const res = await fetch(API_BASE + "/books");
+    const books = await res.json();
+    const book = books.find(b => b.book_id === id);
+    if (!book) return alert("Book not found");
+
+    openModal(
+      "Edit Book",
+      ["Title", "Author", "Genre", "Total Copies"],
+      [book.title, book.author_name, book.genre, book.total_copies],
+      async (values) => {
+        if (!validateAll()) return false; // ❌ stay open
+
+        const [title, author_name, genre, total_copies] = values;
+
+        const res = await fetch(`${API_BASE}/books/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            author_name,
+            genre,
+            total_copies: Number(total_copies)
+          }),
+        });
+
+        const js = await res.json();
+
+        if (res.ok) {
+          alert("✅ Book updated successfully!");
+          await renderApp();
+          return true; // ✅ close modal
+        } else {
+          alert("❌ " + (js.error || "Failed to update book"));
+          return false; // ❌ keep modal open
+        }
+      }
+    );
+
+    // -------------------------
+    // same validation as AddBook
+    // -------------------------
+
+    const textRegex = /^[A-Za-z0-9\s.,\-()]+$/;
+    const numberRegex = /^[0-9]+$/;
+
+    const visibleFields = fields.filter(f => !f.classList.contains("hidden"));
+    const saveBtn = document.querySelector("#modal-save-btn");
+
+    document.querySelectorAll(".error-msg").forEach(e => e.remove());
+
+    const errorBoxes = visibleFields.map(input => {
+      const box = document.createElement("div");
+      box.className = "error-msg";
+      box.style.color = "red";
+      box.style.fontSize = "12px";
+      box.style.marginTop = "3px";
+      box.textContent = "";
+      input.insertAdjacentElement("afterend", box);
+      return box;
+    });
+
+    function validateAll() {
+      let valid = true;
+
+      // TITLE
+      if (!textRegex.test(visibleFields[0].value.trim())) {
+        errorBoxes[0].textContent = "Enter a valid title (letters & spaces only).";
+        valid = false;
+      } else errorBoxes[0].textContent = "";
+
+      // AUTHOR
+      if (!textRegex.test(visibleFields[1].value.trim())) {
+        errorBoxes[1].textContent = "Author must contain letters & spaces only.";
+        valid = false;
+      } else errorBoxes[1].textContent = "";
+
+      // GENRE
+      if (!textRegex.test(visibleFields[2].value.trim())) {
+        errorBoxes[2].textContent = "Genre must contain letters & spaces only.";
+        valid = false;
+      } else errorBoxes[2].textContent = "";
+
+      // TOTAL COPIES
+      if (!numberRegex.test(visibleFields[3].value.trim()) ||
+          Number(visibleFields[3].value) <= 0) {
+        errorBoxes[3].textContent = "Enter a valid number greater than 0.";
+        valid = false;
+      } else errorBoxes[3].textContent = "";
+
+      saveBtn.disabled = !valid;
+      saveBtn.style.opacity = valid ? "1" : "0.5";
+
+      return valid;
+    }
+
+    visibleFields.forEach(input =>
+      input.addEventListener("input", validateAll)
+    );
+
+    validateAll();
+
+  } catch (err) {
+    console.error("Error editing book:", err);
+  }
+};
+
+    // Student Management
+ // --------------------------------------------
+// ADD STUDENT  (Opens 6-field modal + validation)
+// --------------------------------------------
+window.showAddStudent = () => {
+  openModal(
+    "Add New Student",
+    [
+      "Student ID",
+      "Student Name",
+      "Email",
+      "Department",
+      "Year",
+      "Contact Number"
+    ],
+    ["", "", "", "", "", ""],
+    async (values) => {
+      let [
+        student_id,
+        student_name,
+        email,
+        department,
+        year,
+        contact_no
+      ] = values;
+
+      student_id = student_id.trim();
+      student_name = student_name.trim();
+      email = email.trim();
+      department = department.trim();
+      year = year.trim();
+      contact_no = contact_no.trim();
+
+      const payload = {
+        student_id: Number(student_id),
+        student_name,
+        email,
+        department,
+        year: Number(year),
+        contact_no
+      };
+
+      const res = await fetch(API_BASE + "/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const js = await res.json();
+
+      if (res.ok) {
+        alert("✅ Student added successfully!");
+        renderApp();
+        return true;
+      } else {
+        alert("❌ " + (js.error || "Insert failed"));
+        return false;
+      }
+    },
+    "student"
+  );
+};
+
+    window.deleteStudent = async (id) => {
+  if (!confirm('Are you sure you want to delete this student?')) return;
+
+  try {
+    const res = await fetch(API_BASE + '/students/' + id, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert('❌ Failed to delete student: ' + (data.error || 'Unknown error'));
+      return;
+    }
+
+    alert('✅ Student deleted successfully');
+    await renderApp();
+  } catch (err) {
+    console.error('❌ Error deleting student:', err);
+    alert('⚠️ Network error while deleting student');
+  }
+};
+
+window.editStudent = async (id) => {
+  try {
+    const res = await fetch(API_BASE + "/students");
+    const students = await res.json();
+    const student = students.find(s => s.student_id === id);
+
+    if (!student) return alert("Student not found");
+
+    // ---------------------------
+    // OPEN MODAL WITH 6 FIELDS
+    // ---------------------------
+    openModal(
+      "Edit Student",
+      [
+        "Student ID (read-only)",
+        "Student Name",
+        "Email",
+        "Department",
+        "Year",
+        "Contact Number"
+      ],
+      [
+        String(student.student_id),
+        student.student_name,
+        student.email,
+        student.department,
+        String(student.year),
+        student.contact_no
+      ],
+      async (values) => {
+        let [
+          student_id,
+          student_name,
+          email,
+          department,
+          year,
+          contact_no
+        ] = values;
+
+        // Trim
+        student_name = student_name.trim();
+        email = email.trim();
+        department = department.trim();
+        year = year.trim();
+        contact_no = contact_no.trim();
+
+        // ----------------------------
+        // SEND UPDATE (ID UNCHANGED)
+        // ----------------------------
+        const payload = {
+          student_id: Number(student.student_id), // ID FIXED
+          student_name,
+          email,
+          department,
+          year: Number(year),
+          contact_no
+        };
+
+        const updateRes = await fetch(`${API_BASE}/students/${student.student_id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const js = await updateRes.json();
+
+        if (updateRes.ok) {
+          alert("✅ Student updated successfully!");
+          await renderApp();
+          return true;
+        } else {
+          alert("❌ " + (js.error || "Failed to update student"));
+          return false;
+        }
+      },
+      "student" // activates student validation
+    );
+
+    // ----------------------------
+    // MAKE STUDENT ID READ-ONLY
+    // ----------------------------
+    setTimeout(() => {
+  const idField = document.getElementById("editField1");
+  if (idField) {
+    idField.readOnly = true;
+    idField.style.background = "#e5e7eb";
+    idField.style.cursor = "not-allowed";
+  }
+}, 50);
+
+  } catch (err) {
+    console.error("Error editing student:", err);
+  }
+};
+
+
+ // --- Book Issue and Return ---
+window.doIssue = async () => {
+    const bookId = document.getElementById('select-book').value;
+    const studentId = document.getElementById('select-student').value;
+    const dueDateInput = document.getElementById("due-date").value;
+    const msg = document.getElementById('issue-msg');
+
+    // 🧩 Validate inputs
+    if (!bookId || !studentId || !dueDateInput) {
+        msg.textContent = 'Please select a book, student, and due date';
+        msg.style.color = 'red';
+        return;
+    }
+
+    // 🕒 Keep date as-is (avoid timezone conversion)
+    const dueDate = dueDateInput;
+
+    msg.textContent = 'Processing...';
+    msg.style.color = 'blue';
+
+    try {
+        // ✅ Correct route (matches your backend)
+        const res = await fetch(`${API_BASE}/issued`, {  
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                student_id: Number(studentId),
+                book_id: Number(bookId),
+                due_date: dueDate // ✅ Send plain string (YYYY-MM-DD)
+            })
+        });
+
+        const js = await res.json();
+
+        if (!res.ok) {
+            console.error('❌ Server error:', js);
+            msg.textContent = js.error || 'Failed to issue book';
+            msg.style.color = 'red';
+        } else {
+            msg.textContent = '✅ Book issued successfully!';
+            msg.style.color = 'green';
+
+            // 🔄 Reset form safely
+            document.getElementById('select-book').value = '';
+            document.getElementById('select-student').value = '';
+            const dueInput = document.getElementById('due-date');
+            if (dueInput) dueInput.value = '';
+
+            // 🔃 Refresh dashboard after short delay
+            setTimeout(() => renderApp(), 1000);
+        }
+    } catch (err) {
+        console.error('⚠️ Network or JS error:', err);
+        msg.textContent = '⚠️ Failed to connect to server';
+        msg.style.color = 'red';
+    }
+};
+
+// <!-- ✅ Modified Return Book Logic ONLY -->
+window.doReturn = async () => {
+    const issueId = document.getElementById('select-issued-book').value;
+    const msg = document.getElementById('return-msg');
+    
+    if (!issueId) { 
+        msg.textContent = 'Please select an issued book to return';
+        msg.style.color = 'red'; 
+        return; 
+    }
+    
+    msg.textContent = 'Processing...';
+    msg.style.color = 'blue';
+    
+    try {
+        const res = await fetch(API_BASE + '/returns', {
+ 
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body: JSON.stringify({ issue_id: Number(issueId) })
+        });
+        const js = await res.json();
+        
+        if (!res.ok) {
+            msg.textContent = js.error || 'Return failed';
+            msg.style.color = 'red';
+        } else {
+            // ✅ Show backend fine/success message
+            if (js.message) {
+                msg.textContent = js.message;
+                msg.style.color = js.fine > 0 ? 'red' : 'green';
+            } else {
+                msg.textContent = 'Book returned successfully';
+                msg.style.color = 'green';
+            }
+
+            // Reset form
+            document.getElementById('select-issued-book').value = '';
+            
+            // Refresh after delay
+            setTimeout(() => renderApp(), 2000);
+        }
+    } catch (error) {
+        console.error('Error returning book:', error);
+        msg.textContent = 'Error returning book';
+        msg.style.color = 'red';
+    }
+};
+
+
+    // --- Authentication Handlers ---
+
+  window.handleLogin = async () => {
+    const email = document.getElementById('email')?.value?.trim();
+    const password = document.getElementById('password')?.value?.trim();
+    const msg = document.getElementById('login-msg');
+
+    if (!email || !password) {
+        msg.textContent = "Please enter both email and password.";
+        msg.style.color = "red";
+        return;
+    }
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("✅ Logged in:", userCredential.user.email);
+        if (msg) {
+        msg.textContent = "Login successful! Redirecting...";
+        msg.style.color = "green";
+        }
+        setTimeout(async () => {
+            isAuthenticated = true;
+            currentPage = "dashboard";
+            await renderApp();
+        }, 800);
+    } catch (error) {
+        console.error("❌ Login error:", error.message);
+        if (msg) {
+    msg.textContent = error.code === "auth/invalid-credential"
+        ? "Invalid email or password."
+        : "Login failed. Please try again.";
+    msg.style.color = "red";
+}
+
+    }
+};
+
+// --- Logout Function ---
+window.handleLogout = async () => {
+    try {
+        await signOut(auth);
+        isAuthenticated = false;
+        currentPage = "login";
+        appEl.innerHTML = renderLogin();
+    } catch (error) {
+        console.error("Logout failed:", error);
+    }
+};
+
+// // --- Start App on Page Load ---
+// window.onload = initializeFirebase;
+
+  // --- Firebase Initialization ---
+const initializeFirebase = async () => {
+    try {
+        // 👇 Toggle demo mode (true = skip Firebase)
+        const DEMO_MODE = false;
+
+        if (DEMO_MODE) {
+            console.warn("⚡ Demo mode: Skipping Firebase authentication.");
+            isAuthenticated = true;
+            currentUserId = "demo-user";
+            currentPage = "dashboard";
+            await renderApp();
+            return;
+        }
+
+        // ✅ Initialize Firebase
+        const app = initializeApp(FIREBASE_CONFIG);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // 🚫 Always start signed out (fix auto redirect)
+        await signOut(auth).catch(() => {});
+
+        // ✅ Watch authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("✅ Logged in as:", user.email || user.uid);
+                isAuthenticated = true;
+                currentUserId = user.uid;
+                currentPage = "dashboard";
+                await renderApp();
+            } else {
+                console.log("ℹ️ No user signed in — showing login screen.");
+                isAuthenticated = false;
+                currentPage = "login";
+                appEl.innerHTML = renderLogin();
+            }
+        });
+
+    } catch (error) {
+        console.error("⚠️ Firebase initialization failed:", error);
+
+        // Fallback — show login instead of blank screen
+        appEl.innerHTML = `
+            <div class='text-center mt-20 text-red-600'>
+                ⚠️ Firebase setup failed. Please check your configuration.
+            </div>`;
+    }
+};
+
+// Start the application setup
+window.onload = initializeFirebase;
+
+// ====================
+// ✅ CLOSE MODAL FIX
+// ====================
+function closeModal() {
+  if (!modal) modal = document.getElementById("editModal");
+  if (!modalCard) modalCard = modal.querySelector(".bg-white");
+
+  // Hide animation
+  modalCard.classList.remove("modal-show");
+  modalCard.classList.add("modal-hide");
+
+  setTimeout(() => {
+    modal.classList.remove("flex"); // Hides modal
+    modalCard.classList.remove("modal-hide");
+  }, 200);
+}
+
+
+// 🌐 Modal handling (Safe + Stable)
+let modal, modalCard, modalTitle, editForm, cancelBtn, fields;
+
+function initModal() {
+  modal = document.getElementById("editModal");
+  modalCard = modal.querySelector(".bg-white");
+  modalTitle = document.getElementById("modalTitle");
+  editForm = document.getElementById("editForm");
+  cancelBtn = document.getElementById("cancelBtn");
+  fields = [
+  document.getElementById("editField1"),
+  document.getElementById("editField2"),
+  document.getElementById("editField3"),
+  document.getElementById("editField4"),
+  document.getElementById("editField5"),
+  document.getElementById("editField6"),
+];
+
+  if (cancelBtn && !cancelBtn._bound) {
+    cancelBtn.addEventListener("click", closeModal);
+    cancelBtn._bound = true;
+  }
+
+  // Prevent accidental form submissions reloading the page
+  editForm?.addEventListener("submit", (e) => e.preventDefault());
+}
+initModal();
+
+function openModal(title, labels, values = [], onSave = null, formType = null) {
+  if (!modal) initModal();
+
+  modalTitle.innerText = title;
+
+  // --------------------------
+  // RESET & SHOW FIELDS
+  // --------------------------
+  fields.forEach((f, i) => {
+    if (labels[i]) {
+      f.placeholder = labels[i];
+      f.value = values[i] ?? "";
+      f.classList.remove("hidden");
+    } else {
+      f.classList.add("hidden");
+      f.value = "";
+    }
+  });
+
+  // Remove old validation UI
+  document.querySelectorAll(".error-msg").forEach(e => e.remove());
+  fields.forEach(f => (f.style.border = "1px solid #d1d5db"));
+
+  // Show modal
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  modalCard.classList.add("modal-show");
+
+  const visibleFields = fields.filter(f => !f.classList.contains("hidden"));
+  const saveBtn = document.querySelector("#modal-save-btn");
+
+  // ADD ERROR BOXES
+  const errorBoxes = visibleFields.map(input => {
+    const box = document.createElement("div");
+    box.className = "error-msg text-xs mt-1";
+    box.style.color = "red";
+    input.insertAdjacentElement("afterend", box);
+    return box;
+  });
+
+  // --------------------------
+  // HELPERS
+  // --------------------------
+  function setSaveEnabled(enabled) {
+    saveBtn.disabled = !enabled;
+    saveBtn.style.opacity = enabled ? "1" : "0.6";
+    saveBtn.style.cursor = enabled ? "pointer" : "not-allowed";
+  }
+
+  // --------------------------
+  // REGEX RULES
+  // --------------------------
+  const idRegex = /^[0-9]+$/;
+  const textRegex = /^[A-Za-z\s.]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^[0-9]{10}$/;
+
+  // --------------------------
+  // STUDENT VALIDATION
+  // --------------------------
+  function validateStudent() {
+    let valid = true;
+
+    // CORRECT INDEX MAP
+    const idVal = visibleFields[0].value.trim();
+    const nameVal = visibleFields[1].value.trim();
+    const emailVal = visibleFields[2].value.trim();
+    const deptVal = visibleFields[3].value.trim();
+    const yearVal = visibleFields[4].value.trim();
+    const phoneVal = visibleFields[5].value.trim();
+
+    // student_id
+    if (!idRegex.test(idVal)) {
+      errorBoxes[0].textContent = "Student ID must be numeric.";
+      visibleFields[0].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[0].textContent = "";
+      visibleFields[0].style.border = "1px solid #d1d5db";
+    }
+
+    // name
+    if (!textRegex.test(nameVal) || nameVal.length < 3) {
+      errorBoxes[1].textContent = "Enter a valid student name.";
+      visibleFields[1].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[1].textContent = "";
+      visibleFields[1].style.border = "1px solid #d1d5db";
+    }
+
+    // email
+    if (!emailRegex.test(emailVal)) {
+      errorBoxes[2].textContent = "Enter a valid email.";
+      visibleFields[2].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[2].textContent = "";
+      visibleFields[2].style.border = "1px solid #d1d5db";
+    }
+
+    // department
+    if (!textRegex.test(deptVal)) {
+      errorBoxes[3].textContent = "Enter a valid department.";
+      visibleFields[3].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[3].textContent = "";
+      visibleFields[3].style.border = "1px solid #d1d5db";
+    }
+
+    // year
+    const yearNum = Number(yearVal);
+    if (!idRegex.test(yearVal) || yearNum < 1 || yearNum > 4) {
+      errorBoxes[4].textContent = "Year must be between 1–4.";
+      visibleFields[4].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[4].textContent = "";
+      visibleFields[4].style.border = "1px solid #d1d5db";
+    }
+
+    // contact
+    if (!phoneRegex.test(phoneVal)) {
+      errorBoxes[5].textContent = "Contact must be a 10-digit number.";
+      visibleFields[5].style.border = "1px solid red";
+      valid = false;
+    } else {
+      errorBoxes[5].textContent = "";
+      visibleFields[5].style.border = "1px solid #d1d5db";
+    }
+
+    setSaveEnabled(valid);
+    return valid;
+  }
+
+  // --------------------------
+  // BOOK VALIDATION
+  // --------------------------
+  function validateBook() {
+    let valid = true;
+
+    const title = visibleFields[0]?.value.trim();
+    const author = visibleFields[1]?.value.trim();
+    const genre = visibleFields[2]?.value.trim();
+    const copies = visibleFields[3]?.value.trim();
+
+    if (!textRegex.test(title)) valid = false;
+    if (!textRegex.test(author)) valid = false;
+    if (!textRegex.test(genre)) valid = false;
+    if (!idRegex.test(copies) || Number(copies) <= 0) valid = false;
+
+    setSaveEnabled(valid);
+    return valid;
+  }
+
+  // --------------------------
+  // MASTER VALIDATION
+  // --------------------------
+  function runValidation() {
+    if (formType === "student") return validateStudent();
+    if (formType === "book") return validateBook();
+    return true;
+  }
+
+  // Re-validate dynamically
+  visibleFields.forEach(input => {
+    input.addEventListener("input", runValidation);
+  });
+
+  // Disable Save initially
+  if (formType) setSaveEnabled(false);
+  else setSaveEnabled(true);
+
+  // --------------------------
+  // SUBMIT HANDLER (CLEAN)
+  // --------------------------
+  editForm.onsubmit = async (e) => {
+    e.preventDefault();
+
+    if (formType && !runValidation()) return;
+
+    const values = visibleFields.map(f => f.value.trim());
+
+    const shouldClose = await onSave(values);
+    if (shouldClose) closeModal();
+  };
+}
+
+  // ✅ Debug log to confirm script loaded
+  console.log("✅ Dark mode script loaded successfully");
+</script>
+</body>
+</html>
